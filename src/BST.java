@@ -76,7 +76,10 @@ public class BST<K extends Comparable<K>, V> implements Iterable<BST<K, V>.Entry
     }
 
     public void delete(K key) {
-        root = delete(root, key);
+        if (get(key) != null) {
+            root = delete(root, key);
+            size--;
+        }
     }
 
     private Node delete(Node node, K key) {
@@ -91,8 +94,6 @@ public class BST<K extends Comparable<K>, V> implements Iterable<BST<K, V>.Entry
         } else if (cmp > 0) {
             node.right = delete(node.right, key);
         } else {
-            size--;
-
             if (node.left == null) {
                 return node.right;
             }
@@ -107,7 +108,6 @@ public class BST<K extends Comparable<K>, V> implements Iterable<BST<K, V>.Entry
             node.val = min.val;
 
             node.right = deleteMin(node.right);
-            size++;
         }
 
         return node;
@@ -135,18 +135,31 @@ public class BST<K extends Comparable<K>, V> implements Iterable<BST<K, V>.Entry
     }
 
     public Iterator<Entry> iterator() {
-        MyArrayList<Entry> list = new MyArrayList<>();
-        inOrder(root, list);
-        return list.iterator();
+        Entry[] arr = new BST.Entry[size];
+        int[] index = {0};
+        inOrder(root, arr, index);
+
+        return new Iterator<Entry>() {
+            private int current = 0;
+
+            public boolean hasNext() {
+                return current < arr.length;
+            }
+
+            public Entry next() {
+                return arr[current++];
+            }
+        };
     }
 
-    private void inOrder(Node node, MyArrayList<Entry> list) {
+    private void inOrder(Node node, Entry[] arr, int[] index) {
         if (node == null) {
             return;
         }
 
-        inOrder(node.left, list);
-        list.add(new Entry(node.key, node.val));
-        inOrder(node.right, list);
+        inOrder(node.left, arr, index);
+        arr[index[0]] = new Entry(node.key, node.val);
+        index[0]++;
+        inOrder(node.right, arr, index);
     }
 }
